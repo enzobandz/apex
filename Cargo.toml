@@ -1,0 +1,40 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/apex-core",
+    "crates/apex-platform",
+    "crates/apex-cli",
+    "apps/desktop/src-tauri",
+]
+# The Tauri shell needs WebView2 (Windows) or WebKitGTK (Linux) to build.
+# Plain `cargo build` / `cargo test` cover the engine crates everywhere;
+# the desktop app is built with `npm run tauri build` (see README).
+default-members = ["crates/apex-core", "crates/apex-platform", "crates/apex-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+rust-version = "1.80"
+repository = "https://github.com/your-name/apex"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", default-features = false, features = ["clock", "serde", "std"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
+sysinfo = "0.39"
+walkdir = "2.5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tempfile = "3"
+anyhow = "1"
+parking_lot = "0.12"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true

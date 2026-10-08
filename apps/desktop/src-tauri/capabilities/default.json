@@ -1,0 +1,7 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "APEX main window: core events only. All system access goes through APEX's own validated commands.",
+  "windows": ["main"],
+  "permissions": ["core:default"]
+}

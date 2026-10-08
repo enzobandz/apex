@@ -1,0 +1,74 @@
+name: Release
+
+# Push a tag like v0.1.0 to build signed (if a certificate is configured) installers
+# and attach them to a draft GitHub release.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      HAS_CERT: ${{ secrets.WINDOWS_CERTIFICATE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - working-directory: apps/desktop
+        run: npm ci
+
+      # Optional Authenticode signing. Set repository secrets WINDOWS_CERTIFICATE (base64 .pfx)
+      # and WINDOWS_CERTIFICATE_PASSWORD. Without them the installer is built UNSIGNED and
+      # the release notes say so — APEX never claims an unsigned build is signed.
+      - name: Import signing certificate
+        id: cert
+        if: ${{ env.HAS_CERT == 'true' }}
+        env:
+          CERT: ${{ secrets.WINDOWS_CERTIFICATE }}
+          PASS: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+        shell: pwsh
+        run: |
+          $bytes = [Convert]::FromBase64String($env:CERT)
+          $path = Join-Path $env:RUNNER_TEMP "cert.pfx"
+          [IO.File]::WriteAllBytes($path, $bytes)
+          $pwd = ConvertTo-SecureString $env:PASS -AsPlainText -Force
+          $c = Import-PfxCertificate -FilePath $path -CertStoreLocation Cert:\CurrentUser\My -Password $pwd
+          Remove-Item $path
+          "thumbprint=$($c.Thumbprint)" >> $env:GITHUB_OUTPUT
+
+      - name: Configure signing
+        if: ${{ steps.cert.outputs.thumbprint != '' }}
+        shell: pwsh
+        working-directory: apps/desktop/src-tauri
+        run: |
+          $conf = Get-Content tauri.conf.json -Raw | ConvertFrom-Json
+          $conf.bundle.windows | Add-Member -NotePropertyName certificateThumbprint -NotePropertyValue "${{ steps.cert.outputs.thumbprint }}" -Force
+          $conf.bundle.windows | Add-Member -NotePropertyName digestAlgorithm -NotePropertyValue "sha256" -Force
+          $conf.bundle.windows | Add-Member -NotePropertyName timestampUrl -NotePropertyValue "http://timestamp.digicert.com" -Force
+          $conf | ConvertTo-Json -Depth 20 | Set-Content tauri.conf.json
+
+      - name: Build installers
+        working-directory: apps/desktop
+        run: npx tauri build
+
+      - name: Checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem target/release/bundle -Recurse -Include *.exe,*.msi | ForEach-Object {
+            "$((Get-FileHash $_ -Algorithm SHA256).Hash)  $($_.Name)" } | Out-File -Encoding ascii SHA256SUMS.txt
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          body: |
+            ${{ steps.cert.outputs.thumbprint != '' && 'Installers are Authenticode-signed.' || '⚠️ These installers are **not code-signed**. Windows SmartScreen will warn before running them. Verify the SHA-256 checksums below.' }}
+          files: |
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/msi/*.msi
+            SHA256SUMS.txt

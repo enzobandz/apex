@@ -1,0 +1,19 @@
+[package]
+name = "apex-cli"
+description = "Command-line front end to the APEX engine (diagnostics, benchmarks, plans, undo)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "apex"
+path = "src/main.rs"
+
+[dependencies]
+apex-core = { path = "../apex-core" }
+apex-platform = { path = "../apex-platform" }
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+clap = { version = "4.6", features = ["derive"] }

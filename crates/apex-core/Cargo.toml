@@ -1,0 +1,21 @@
+[package]
+name = "apex-core"
+description = "Platform-independent optimization engine, change ledger, rollback and benchmark statistics for APEX"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+uuid.workspace = true
+chrono.workspace = true
+rusqlite.workspace = true
+walkdir.workspace = true
+tracing.workspace = true
+parking_lot.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true

@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  engine-linux:
+    name: Engine + UI (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --locked --all-targets -- -D warnings
+      - run: cargo test --locked
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - working-directory: apps/desktop
+        run: |
+          npm ci
+          npm run typecheck
+          npm test
+          npm run build
+
+  windows:
+    name: Windows build, tests & installer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - name: Install UI dependencies
+        working-directory: apps/desktop
+        run: npm ci
+      - name: Build UI (needed by the Tauri crate)
+        working-directory: apps/desktop
+        run: npm run build
+      - name: Clippy (whole workspace, Windows code paths)
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - name: Unit + Windows integration tests (registry, powercfg, priority — all self-restoring)
+        run: cargo test --locked -p apex-core -p apex-platform -p apex-cli -- --test-threads=1
+      - name: Build installer (NSIS + MSI)
+        working-directory: apps/desktop
+        run: npx tauri build
+      - name: Smoke-test CLI on the runner
+        run: |
+          cargo run --locked --release -p apex-cli -- --db "$env:RUNNER_TEMP\apex-ci.db" snapshot
+          cargo run --locked --release -p apex-cli -- --db "$env:RUNNER_TEMP\apex-ci.db" recommend gaming
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apex-windows-installers
+          path: |
+            target/release/bundle/nsis/*.exe
+            target/release/bundle/msi/*.msi
+          if-no-files-found: error
+
+  audit:
+    name: Dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: cargo install cargo-audit --locked
+      - run: cargo audit
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - working-directory: apps/desktop
+        run: |
+          npm ci
+          npm audit --audit-level=high --omit=dev

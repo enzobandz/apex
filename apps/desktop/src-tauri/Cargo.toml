@@ -1,0 +1,26 @@
+[package]
+name = "apex-desktop"
+description = "APEX — Windows Performance Optimizer (desktop app)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[lib]
+name = "apex_desktop_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+apex-core = { path = "../../../crates/apex-core" }
+apex-platform = { path = "../../../crates/apex-platform" }
+tauri = { version = "2", features = [] }
+serde.workspace = true
+serde_json.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+parking_lot.workspace = true
+chrono.workspace = true
+uuid.workspace = true

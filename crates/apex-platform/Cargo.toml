@@ -1,0 +1,23 @@
+[package]
+name = "apex-platform"
+description = "Real system measurements (all platforms) and Windows system-change backend for APEX"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+apex-core = { path = "../apex-core" }
+sysinfo.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+chrono.workspace = true
+tracing.workspace = true
+parking_lot.workspace = true
+
+[target.'cfg(windows)'.dependencies]
+winreg = "0.56"
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Graphics_Gdi"] }
+
+[dev-dependencies]
+tempfile.workspace = true
