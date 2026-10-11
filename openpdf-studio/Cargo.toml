@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = ["crates/opdf-core", "crates/opdf-cli"]
+# The Tauri shell needs WebView2 (Windows), WKWebView (macOS) or WebKitGTK
+# (Linux) to build. `cargo test` without arguments covers the engine and CLI
+# everywhere; the desktop app is built with `npm run tauri build`.
+default-members = ["crates/opdf-core", "crates/opdf-cli"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MPL-2.0"
+rust-version = "1.89"
+repository = "https://github.com/openpdf-studio/openpdf-studio"
+authors = ["OpenPDF Studio contributors"]
+
+[workspace.dependencies]
+lopdf = { version = "0.45", default-features = false, features = ["chrono-clock"] }
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "bmp", "tiff", "webp"] }
+flate2 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+rand = "0.9"
+sha2 = "0.10"
+rayon = "1"
+tracing = "0.1"
+tempfile = "3"
+uuid = { version = "1", features = ["v4"] }
+rusqlite = { version = "0.37", features = ["bundled"] }
+parking_lot = "0.12"
+anyhow = "1"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = true
+panic = "unwind" # PDF parsing of untrusted input is guarded with catch_unwind
+
+[profile.dev.package."*"]
+opt-level = 2 # PDF parsing, flate and image decoding are painfully slow unoptimised

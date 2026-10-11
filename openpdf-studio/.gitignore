@@ -1,0 +1,10 @@
+/target
+node_modules/
+app/dist/
+app/public/pdfjs/
+app/src-tauri/gen/
+app/test-results/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store

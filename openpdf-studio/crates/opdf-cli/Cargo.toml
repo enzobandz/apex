@@ -1,0 +1,23 @@
+[package]
+name = "opdf-cli"
+description = "OpenPDF Studio command line: merge, split, extract, rotate, protect, optimize, images to PDF"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+authors.workspace = true
+
+[[bin]]
+name = "opdf"
+path = "src/main.rs"
+
+[dependencies]
+opdf-core = { path = "../opdf-core" }
+clap = { version = "4", features = ["derive", "env"] }
+rayon.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
