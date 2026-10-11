@@ -1,10 +1,10 @@
 [workspace]
 resolver = "2"
-members = ["crates/opdf-core", "crates/opdf-cli"]
+members = ["crates/opdf-core", "crates/opdf-cli", "app/src-tauri"]
 # The Tauri shell needs WebView2 (Windows), WKWebView (macOS) or WebKitGTK
 # (Linux) to build. `cargo test` without arguments covers the engine and CLI
 # everywhere; the desktop app is built with `npm run tauri build`.
-default-members = ["crates/opdf-core", "crates/opdf-cli"]
+default-members = ["crates/opdf-core", "crates/opdf-cli", "app/src-tauri"]
 
 [workspace.package]
 version = "0.1.0"
@@ -28,7 +28,7 @@ rayon = "1"
 tracing = "0.1"
 tempfile = "3"
 uuid = { version = "1", features = ["v4"] }
-rusqlite = { version = "0.37", features = ["bundled"] }
+rusqlite = { version = "0.40", features = ["bundled"] }
 parking_lot = "0.12"
 anyhow = "1"
 
