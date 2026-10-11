@@ -301,6 +301,30 @@ await test("closing a modified document asks to save", async () => {
   await s.waitFor(`return !__opdf.store.getState().tabs.some(t => t.id === ${t.id})`, { message: "tab closed" });
 });
 
+await test("the webview refuses to navigate away from the app", async () => {
+  // A local web server that WebKit/WebView2 would happily load: if the
+  // navigation guard works, it never even receives the request.
+  const { createServer } = await import("node:http");
+  let hits = 0;
+  const server = createServer((_, res) => {
+    hits++;
+    res.end("<html><body>escaped</body></html>");
+  });
+  await new Promise((r) => server.listen(0, "127.0.0.2", r));
+  const url = `http://127.0.0.2:${server.address().port}/`;
+  try {
+    const before = await s.run("return location.href");
+    await s.run(`setTimeout(() => { location.href = ${JSON.stringify(url)}; }, 0); return true;`);
+    await new Promise((r) => setTimeout(r, 2000));
+    if (hits) throw new Error("the webview requested an external page");
+    const after = await s.run("return location.href");
+    if (after !== before) throw new Error(`navigated to ${after}`);
+    if (!(await s.run("return !!window.__opdf"))) throw new Error("app state lost");
+  } finally {
+    server.close();
+  }
+});
+
 await test("home screen lists recent files", async () => {
   await s.run("__opdf.store.setState({ activeId: null })");
   await s.waitFor("return document.querySelectorAll('.recent-row').length >= 1", { message: "recent rows" });

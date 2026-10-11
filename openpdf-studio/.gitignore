@@ -8,4 +8,4 @@ app/test-results/
 *.db-wal
 *.db-shm
 .DS_Store
-e2e/screenshots/
+app/e2e/screenshots/

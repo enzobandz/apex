@@ -129,9 +129,33 @@ export async function commitAnnotations(tab: Tab, label = "Annotations and form 
   }
 }
 
+const signatureWarningShown = new Set<number>();
+
+/**
+ * Structural edits rewrite the whole file, which breaks existing digital
+ * signatures (annotations and form entries are saved incrementally and do
+ * not). Ask once per document before doing that.
+ */
+export async function confirmSignedEdit(tab: Tab): Promise<boolean> {
+  if (!tab.doc.summary?.hasSignatures || signatureWarningShown.has(tab.id)) return true;
+  const choice = await ask<string>({
+    kind: "confirm",
+    title: "This document is digitally signed",
+    body: "Changing pages, properties, security or file size rewrites the document, so its existing digital signatures will no longer validate. Comments and form entries are saved without affecting signatures.",
+    actions: [
+      { id: "cancel", label: "Cancel" },
+      { id: "continue", label: "Continue anyway", danger: true },
+    ],
+  });
+  if (choice !== "continue") return false;
+  signatureWarningShown.add(tab.id);
+  return true;
+}
+
 /** Apply a structural edit to the active document. */
 export async function applyOp(op: Op, tab: Tab | null = activeTab()) {
   if (!tab) return null;
+  if (!(await confirmSignedEdit(tab))) return null;
   if (!(await commitAnnotations(tab))) return null;
   const res = await busy(labelFor(op), () => api.apply(tab.id, op));
   if (res) setDoc(res.state);

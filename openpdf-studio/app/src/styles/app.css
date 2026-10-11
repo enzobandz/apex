@@ -949,7 +949,10 @@ textarea.input {
   background: var(--accent-soft);
   border-color: var(--accent);
 }
-.org-card.is-focus {
+.org-grid:focus-visible {
+  box-shadow: none;
+}
+.org-grid:focus-visible .org-card.is-focus {
   box-shadow: var(--focus);
 }
 .org-card.is-dragging {
@@ -972,7 +975,7 @@ textarea.input {
   transition: opacity var(--dur) var(--ease);
 }
 .org-card:hover .org-actions,
-.org-card.is-focus .org-actions {
+.org-grid:focus-visible .org-card.is-focus .org-actions {
   opacity: 1;
 }
 .org-actions .icon-btn {

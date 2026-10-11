@@ -4,7 +4,7 @@ import { Button, Checkbox, Field, Modal, Segmented, Spinner } from "../component
 import { api } from "../lib/ipc";
 import type { FileRef, SplitPlan } from "../lib/types";
 import { formatRanges, parseRanges } from "../lib/ranges";
-import { adoptDoc, applyOp, commitAnnotations, describe, setDoc } from "../state/actions";
+import { adoptDoc, applyOp, commitAnnotations, confirmSignedEdit, describe, setDoc } from "../state/actions";
 import { closeDialog, toast, useActiveTab, type Tab } from "../state/store";
 import { A4_OR_LETTER } from "../components/pageMenu";
 import { canvasToBytes, releaseCanvas, renderPageToCanvas } from "../lib/pdfjs";
@@ -251,6 +251,7 @@ export function InsertPagesDialog() {
   const at = where === "after" ? ref + 1 : where === "before" ? (tab.selection.length ? Math.min(...tab.selection) : tab.page - 1) : tab.pageCount;
   const run = async () => {
     if (!file) return;
+    if (!(await confirmSignedEdit(tab))) return;
     setWorking(true);
     try {
       if (!(await commitAnnotations(tab))) return;

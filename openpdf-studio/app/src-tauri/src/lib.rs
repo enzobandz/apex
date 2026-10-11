@@ -86,6 +86,30 @@ macro_rules! handlers {
     }};
 }
 
+/// The webview may only ever show the app itself. Links in documents are
+/// opened in the system browser by an explicit, confirmed command instead.
+fn is_app_url(url: &url::Url) -> bool {
+    match (url.scheme(), url.host_str()) {
+        ("tauri", Some("localhost")) => true, // macOS / Linux
+        ("http" | "https", Some("tauri.localhost")) => true, // Windows
+        ("http", Some("localhost" | "127.0.0.1")) => cfg!(dev), // `tauri dev` server
+        ("about", _) => url.as_str() == "about:blank",
+        _ => false,
+    }
+}
+
+fn navigation_guard<R: tauri::Runtime>() -> tauri::plugin::TauriPlugin<R> {
+    tauri::plugin::Builder::new("navigation-guard")
+        .on_navigation(|_, url| {
+            let ok = is_app_url(url);
+            if !ok {
+                tracing::warn!("blocked navigation to {url}");
+            }
+            ok
+        })
+        .build()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let _ = tracing_subscriber::fmt()
@@ -105,6 +129,7 @@ pub fn run() {
                 let _ = w.set_focus();
             }
         }))
+        .plugin(navigation_guard())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .setup(|app| {
@@ -219,4 +244,21 @@ pub fn run() {
             _ => {}
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_app_url;
+
+    #[test]
+    fn only_the_app_itself_may_load_in_the_webview() {
+        let ok = |s: &str| is_app_url(&url::Url::parse(s).unwrap());
+        assert!(ok("tauri://localhost/index.html"));
+        assert!(ok("http://tauri.localhost/"));
+        assert!(ok("about:blank"));
+        assert!(!ok("https://example.org/"));
+        assert!(!ok("file:///etc/passwd"));
+        assert!(!ok("tauri://evil.example/"));
+        assert!(!ok("javascript:alert(1)"));
+    }
 }
