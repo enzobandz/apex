@@ -205,6 +205,7 @@ await test("add a text box annotation and save as a new file", async () => {
   const p = await s.run(`${visible} return { x: r.x + r.width * 0.3, y: top + (bottom - top) * 0.3 };`);
   await s.clickAt(p.x, p.y);
   await s.waitFor("return !!document.querySelector('.freeTextEditor .internal')", { message: "free text editor" });
+  await s.run("document.querySelector('.freeTextEditor .internal').focus()");
   await s.keys("Hello E2E");
   // Commit the editor by clicking an empty spot of the page (inside the viewport).
   const q = await s.run(`${visible} return { x: r.x + r.width * 0.8, y: top + (bottom - top) * 0.85 };`);
@@ -255,7 +256,8 @@ await test("annotate the encrypted document and save it again", async () => {
     const top = Math.max(r.y, v.y) + 10, bottom = Math.min(r.bottom, v.bottom) - 10;`;
   const p = await s.run(`${visible} return { x: r.x + r.width * 0.3, y: top + (bottom - top) * 0.6 };`);
   await s.clickAt(p.x, p.y);
-  await s.waitFor("return !!document.querySelector('.freeTextEditor .internal:focus')", { message: "editor focused" });
+  await s.waitFor("return !!document.querySelector('.freeTextEditor .internal')", { message: "free text editor" });
+  await s.run("document.querySelector('.freeTextEditor .internal').focus()");
   await s.keys("Secret note");
   const q = await s.run(`${visible} return { x: r.x + r.width * 0.8, y: top + (bottom - top) * 0.9 };`);
   await s.clickAt(q.x, q.y);

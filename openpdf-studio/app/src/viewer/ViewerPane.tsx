@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { TriangleAlert } from "lucide-react";
-import "pdfjs-dist/web/pdf_viewer.css";
+import "pdfjs-dist/legacy/web/pdf_viewer.css";
 import { ViewerController } from "./controller";
 import { getPdf } from "./pdfRegistry";
 import { setActiveViewer } from "./active";

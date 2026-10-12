@@ -1,7 +1,7 @@
 // Wraps pdf.js' PDFViewer: lifecycle, zoom, navigation, find, annotation
 // editor tools. One instance per displayed (tab, revision).
 
-import { EventBus, PDFFindController, PDFLinkService, PDFViewer, ScrollMode, SpreadMode } from "pdfjs-dist/web/pdf_viewer.mjs";
+import { EventBus, PDFFindController, PDFLinkService, PDFViewer, ScrollMode, SpreadMode } from "pdfjs-dist/legacy/web/pdf_viewer.mjs";
 import { pdfjs, type PDFDocumentProxy } from "../lib/pdfjs";
 import type { Layout, Tool, ToolStyle, Zoom } from "../state/store";
 

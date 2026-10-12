@@ -24,7 +24,7 @@ export class Session {
     return (await this.cmd("POST", "/execute/async", {
       script: `const done = arguments[arguments.length - 1];
                Promise.resolve((async (...__args) => { ${script} })(...Array.from(arguments).slice(0, -1)))
-                 .then(v => done({ ok: true, v }), e => done({ ok: false, e: String(e && e.stack || e) }));`,
+                 .then(v => done({ ok: true, v }), e => done({ ok: false, e: String(e) + (e && e.stack ? ' | ' + e.stack : '') }));`,
       args,
     })).value;
   }

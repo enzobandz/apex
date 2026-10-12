@@ -1,3 +1,4 @@
+import "./lib/polyfills"; // must run before pdf.js is evaluated
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App";

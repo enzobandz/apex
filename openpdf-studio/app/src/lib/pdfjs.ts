@@ -2,9 +2,11 @@
 // fetched from the network. PDF JavaScript is never executed (no scripting
 // manager); pdf.js 6 no longer compiles fonts with `eval`.
 
-import * as pdfjs from "pdfjs-dist";
+// The legacy build carries polyfills for the older WebKit versions shipped by
+// macOS and Linux distributions (the app uses the system webview).
+import * as pdfjs from "pdfjs-dist/legacy/build/pdf.mjs";
 import type { PDFDocumentProxy, PDFPageProxy } from "pdfjs-dist";
-import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import workerUrl from "pdfjs-dist/legacy/build/pdf.worker.min.mjs?url";
 
 pdfjs.GlobalWorkerOptions.workerSrc = workerUrl;
 
