@@ -9,6 +9,8 @@ members = [
 # The Tauri shell needs WebView2 (Windows) or WebKitGTK (Linux) to build.
 # Plain `cargo build` / `cargo test` cover the engine crates everywhere;
 # the desktop app is built with `npm run tauri build` (see README).
+# OpenPDF Studio is a separate, self-contained workspace.
+exclude = ["openpdf-studio"]
 default-members = ["crates/apex-core", "crates/apex-platform", "crates/apex-cli"]
 
 [workspace.package]

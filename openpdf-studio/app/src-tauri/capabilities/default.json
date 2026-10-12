@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "The main window may use core IPC, events and set its own title. File access goes exclusively through the app's own grant-checked commands; the dialog and opener plugins are used from Rust only.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-set-title",
+    "core:window:allow-close",
+    "core:window:allow-destroy"
+  ]
+}
